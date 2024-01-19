@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
+  name       String?
+  password   String
+  avatarPath String?
+  createdAt  DateTime  @default(now())
+  phone      String?   @default("")
+  orders     Order[]
+  products   Product[]
+  reviews    Reviews[]
+  isAdmin    Boolean
+}
+
+model Product {
+  id          Int         @id @default(autoincrement())
+  description String?
+  isExsist    Boolean?    @default(false)
+  userId      Int?
+  categoryId  Int?        @unique
+  createdAt   DateTime    @default(now())
+  price       Int
+  slug        String
+  updatedAt   DateTime    @updatedAt
+  image       String[]
+  name        String
+  searchTerm  String?
+  orderItem   OrderItem[]
+  category    Category?   @relation(fields: [categoryId], references: [id])
+  user        User?       @relation(fields: [userId], references: [id])
+  reviews     Reviews[]
+}
+
+model Category {
+  id       Int       @id @default(autoincrement())
+  slug     String
+  createAt DateTime  @default(now())
+  name     String
+  products Product[]
+}
+
+model Reviews {
+  id Int @id @default(autoincrement())
+
+  productId Int?
+  userId    Int
+  createdAt DateTime @default(now())
+  text      String
+  updatedAt DateTime @updatedAt
+  product   Product? @relation(fields: [productId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+  rating    Int
+}
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  status    String?
+  UserId    Int?
+  user      User?       @relation(fields: [UserId], references: [id])
+  items     OrderItem[]
+  total     Int
+}
+
+model OrderItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  quantity  Int
+  price     Int
+  orderId   Int?
+  productId Int?
+  Order     Order?   @relation(fields: [orderId], references: [id])
+  Product   Product? @relation(fields: [productId], references: [id])
+}
